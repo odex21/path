@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    // "module": "esnext",
+    // "strict": true,
+    // "target": "ES2018",
+    // "jsx": "preserve",
+    "importHelpers": true,
+    // "allowJs": true,
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": {
+      "/@/*": [
+        "./*"
+      ],
+      "spritejs": [
+        "spritejs/dist/spritejs.esm.js"
+      ]
+    },
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable",
+      "ES2015",
+      "ES5"
+    ],
+  },
+  "include": [
+    "visual",
+    "source",
+  ],
+  "exclude": [
+    "source"
+  ]
+}

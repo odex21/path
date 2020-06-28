@@ -14,8 +14,14 @@
       <span>x: {{ coor[0] }}, y: {{ coor[1] }}</span>
     </div>
     <div class="status-controller">
-      <button @click="startFind">findPath</button>
-      <button @click="resetMap">reset</button>
+      <p>
+        <button @click="startFind">findPath</button>
+        <button @click="resetMap">reset</button>
+      </p>
+      <p>
+        <button @click="saveGrid">saveGrid</button>
+        <button @click="useGrid">useGrid</button>
+      </p>
     </div>
   </div>
 </template>
@@ -25,6 +31,8 @@ import { onMounted, defineComponent, Ref, ref, reactive, toRefs } from 'vue'
 import { initSprite, InitMapConfig } from './panel/draw'
 import { Pos } from './panel/utils'
 import { find } from 'ramda'
+import { Grid, Node } from '/@/source'
+import { getStore, GRID } from './lib/store'
 
 export default defineComponent({
   name: 'App',
@@ -32,36 +40,52 @@ export default defineComponent({
   },
   setup () {
     const container: Ref<HTMLCanvasElement> = ref(null)
-
+    let grid: Grid
+    let setGridFunc: (g: Grid) => void
+    const localStore = getStore()
 
     const mapConfig = reactive({
-      startCoor: [ 20, 10 ],
-      endCoor: [ 35, 10 ]
+      startCoor: [ 11, 10 ],
+      endCoor: [ 17, 10 ]
     }) as InitMapConfig
 
     const findPath = ref(async () => [ [ 0 ] ])
     const resetMap = ref(() => { })
     onMounted(() => {
-      if (container.value) {
-        const { scene, findPath: v_findPath, reset } = initSprite(container.value, toRefs(mapConfig))
-        findPath.value = v_findPath
-        resetMap.value = reset
-      }
+      const { scene, findPath: v_findPath, reset, grid: _g, setGrid } = initSprite(container.value, toRefs(mapConfig))
+      findPath.value = v_findPath
+      resetMap.value = reset
+      grid = _g
+      setGridFunc = setGrid
     })
 
-    const changeStart = () => {
-      // startCoor = [ 2, 1 ]
-    }
 
     const startFind = async () => {
       const path = await findPath.value()
       console.log(path)
     }
+
+    const saveGrid = () => {
+      const arr = grid.nodes.map((rows) => rows.map(n => n.walkable ? 0 : 1))
+      localStore.setItem(GRID, arr)
+    }
+
+    const useGrid = async () => {
+      const matrix: number[][] = await localStore.getItem(GRID)
+      if (matrix && setGridFunc) {
+        grid = new Grid(matrix)
+        setGridFunc(grid)
+      }
+    }
+
+
     return {
       container,
       mapConfig,
       startFind,
-      resetMap
+      resetMap,
+      saveGrid,
+      useGrid
     }
   }
 })

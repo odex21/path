@@ -24,5 +24,3 @@ export * from './core/Util'
 export { Node } from './core/Node'
 
 export { AStarFinder } from './finders/AStarFinder'
-
-const a = [ 1, 2 ]

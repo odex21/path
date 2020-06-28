@@ -1,4 +1,4 @@
-import { Node } from '../../source'
+import { Node } from '/@/source'
 
 export interface Controller {
   operations: {

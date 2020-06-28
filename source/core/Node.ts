@@ -1,3 +1,11 @@
+export interface Node {
+    new(x: number, y: number, walkable: boolean): Node
+    new(x: number, y: number): Node
+    x: number
+    y: number
+    walkable: boolean
+}
+
 /**
  * A node in grid. 
  * This class holds some basic information about a node and custom 
@@ -7,7 +15,7 @@
  * @param {number} y - The y coordinate of the node on the grid.
  * @param {boolean} [walkable] - Whether this node is walkable.
  */
-export function Node(x, y, walkable) {
+export function Node (x, y, walkable?) {
     /**
      * The x coordinate of the node on the grid.
      * @type number
@@ -25,4 +33,3 @@ export function Node(x, y, walkable) {
     this.walkable = (walkable === undefined ? true : walkable)
 }
 
-// module.exports = Node;

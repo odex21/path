@@ -2,9 +2,9 @@ import { ToRefs, isRef, toRefs, toRaw, reactive } from 'vue'
 import { trackNode, Controller } from './trackNode'
 import { Scene, Node, Polyline } from 'spritejs'
 import { initBaseSqure, setSqureWalkable } from './Squre'
-import { Grid, AStarFinder, DiagonalMovement, Heuristic } from '../../source'
+import { Grid, AStarFinder, DiagonalMovement, Heuristic, } from '/@/source/'
 import { merge, curry, flatten } from 'ramda'
-import { posToCoor as toCoor, isSamePos, Pos, getRectArr, coorToPos, buildSvgPath, posToCoor, sleep } from './utils'
+import { isSamePos, Pos, getRectArr, coorToPos, posToCoor, sleep } from './utils'
 import { squreStyle } from './style'
 
 
@@ -15,6 +15,7 @@ export interface InitMapConfig {
   startCoor?: Pos
   endCoor?: Pos
   stepInterval?: number
+  // grid?:
 }
 
 
@@ -51,7 +52,7 @@ export const initSprite = (container: HTMLCanvasElement, initConfig: ToRefs<Init
   const mapArr = getRectArr(nodeSize, Math.floor(container.clientHeight / nodeSize), Math.floor(container.clientWidth / nodeSize,))
   const gridArr = mapArr.map(rows => rows.map(e => 0))
   //! ts 的参数判断有问题
-  const grid = new Grid(gridArr, 0)
+  let grid = new Grid(gridArr)
 
   const finder = new AStarFinder({
     allowDiagonal: true,
@@ -66,7 +67,8 @@ export const initSprite = (container: HTMLCanvasElement, initConfig: ToRefs<Init
   const scene = new Scene({
     container,
     width: container.clientWidth,
-    height: container.clientHeight
+    height: container.clientHeight,
+    mode: 'stickyLeft'
   })
   const layer = scene.layer()
 
@@ -140,6 +142,18 @@ export const initSprite = (container: HTMLCanvasElement, initConfig: ToRefs<Init
     if (resultPath) resultPath.remove()
   }
 
+  const setGrid = (newGrid: Grid) => {
+    newGrid.nodes.forEach(rows => {
+      rows.forEach(node => {
+        if (!node.walkable) {
+          const target = layer.childNodes.find((child: Node) => isSamePos(child.attributes.pos, toPos(node.x, node.y)))
+          changeSqureState(target, false)
+        }
+      })
+    })
+    grid = newGrid
+  }
+
 
   // handler event
   const dragStartOrEnd = (target: Node, pos: Pos) => {
@@ -208,9 +222,11 @@ export const initSprite = (container: HTMLCanvasElement, initConfig: ToRefs<Init
   })
 
   return {
+    grid,
     scene,
     findPath,
-    reset
+    reset,
+    setGrid
   }
 }
 
