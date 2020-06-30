@@ -6,3 +6,5 @@ export const getStore = (name = 'kkdy-path') => {
 }
 
 export const GRID = 'grid'
+export const START_POS = 'start_pos'
+export const END_POS = 'end_pos'

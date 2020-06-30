@@ -26,6 +26,26 @@ export class Node {
     closed?: boolean
 
     /**
+     * parent node
+     */
+    parent?: Node
+
+
+    /**
+     * distance to end point
+     */
+    h!: number
+    /**
+     * path cost 
+     */
+    g!: number
+    /**
+     * h + g
+     */
+    f!: number
+
+
+    /**
      * A node in grid. 
      * This class holds some basic information about a node and custom 
      * attributes may be added, depending on the algorithms' needs.

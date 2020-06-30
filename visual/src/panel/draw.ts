@@ -1,17 +1,16 @@
 import { Ref, ref } from 'vue'
 import { Scene, Node, Polyline } from 'spritejs'
 import { initBaseSqure, setSqureWalkable } from './Squre'
-import { DiagonalMovement, Heuristic, AStarFinder, } from '/@/source/'
+import { DiagonalMovement, Heuristic, AStarFinder, smoothenPath, Pos, Path, compressPath } from '/@/source/'
 import { merge, curry, flatten, mergeWith } from 'ramda'
-import { isSamePos, Pos, getRectArr, coorToPos, posToCoor, sleep } from './utils'
+import { isSamePos, getRectArr, coorToPos, posToCoor, sleep } from './utils'
 import { squreStyle } from './style'
 import { TrackedGrid } from '/@/source/core/Grid'
-import { Operation } from '/@/source/core/Node'
 
 
 type CurrentActionMode = 'idle' | 'draggingStart' | 'draggingEnd' | 'drawingWall' | 'erasingWall'
-type WatchPos = Ref<Pos>
-type WatchNum = Ref<number>
+export type WatchPos = Ref<Pos>
+export type WatchNum = Ref<number>
 
 export interface InitMapConfig {
   nodeSize: number
@@ -20,7 +19,7 @@ export interface InitMapConfig {
   stepInterval: WatchNum
 }
 
-type PartialInitMapConfig = Partial<InitMapConfig>
+export type PartialInitMapConfig = Partial<InitMapConfig>
 
 const defaultInitMapConfig = {
   nodeSize: 30,
@@ -45,6 +44,7 @@ export const initSprite = (container: HTMLCanvasElement, initConfig: PartialInit
 
   //? init pathfinding
   let resultPath: Polyline
+  let running = false
 
   const mapArr = getRectArr(nodeSize, Math.floor(container.clientHeight / nodeSize), Math.floor(container.clientWidth / nodeSize,))
   const gridArr = mapArr.map(rows => rows.map(e => 0))
@@ -53,11 +53,13 @@ export const initSprite = (container: HTMLCanvasElement, initConfig: PartialInit
 
   console.log('grid', grid)
 
+  /**
+   * finder
+   */
   const finder = new AStarFinder({
-    // allowDiagonal: true,
     diagonalMovement: DiagonalMovement.OnlyWhenNoObstacles,
     heuristic: Heuristic.manhattan,
-    weight: 0.5,
+    weight: 1,
     // dontCrossCorners: true
   })
 
@@ -96,14 +98,21 @@ export const initSprite = (container: HTMLCanvasElement, initConfig: PartialInit
 
 
 
-  // function
+
+  /**
+   * find path
+   */
   const findPath = async () => {
+    running = true
+
     if (resultPath) {
       resultPath.remove()
     }
     const start = startCoor.value
     const end = endCoor.value
-    const path = finder.findPath(start[ 0 ], start[ 1 ], end[ 0 ], end[ 1 ], grid.clone()) as [ number, number ][]
+    let path = finder.findPath(start[ 0 ], start[ 1 ], end[ 0 ], end[ 1 ], grid.clone()) as [ number, number ][]
+    // path = compressPath(path)
+    // path = smoothenPath(grid, path) as [ number, number ][]
 
     resultPath = new Polyline({
       pos: [ 0, 0 ],
@@ -116,20 +125,26 @@ export const initSprite = (container: HTMLCanvasElement, initConfig: PartialInit
     layer.append(resultPath)
     // console.log(grid.operations)
     for (const op of grid.operations) {
+      if (!running) break
       if (op.attr in squreStyle) {
         const target: Node = layer.childNodes.find((e: Node) => isSamePos(e.attributes.pos, toPos(op.x, op.y)))
         if (target) {
           target.attr(squreStyle[ op.attr ])
         }
       }
-
+      console.log(stepInterval.value)
       await sleep(stepInterval.value)
     }
 
+    running = false
     return path
   }
 
+  /**
+   * reset map status
+   */
   const reset = () => {
+    running = false
     layer.childNodes.forEach(node => {
       changeSqureState(node, true)
     })

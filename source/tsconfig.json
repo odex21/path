@@ -11,14 +11,7 @@
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
     "baseUrl": ".",
-    "paths": {
-      "/@/*": [
-        "./*"
-      ],
-      "spritejs": [
-        "spritejs/dist/spritejs.esm.js"
-      ]
-    },
+    "noImplicitAny": false,
     "lib": [
       "ESNext",
       "DOM",
@@ -26,12 +19,9 @@
       "ES2015",
       "ES5"
     ],
+    "declaration": true
   },
   "include": [
-    "visual",
-    "source",
-  ],
-  "exclude": [
-    "visual/dist/*"
+    "index.ts"
   ]
 }

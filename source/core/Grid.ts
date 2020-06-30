@@ -1,5 +1,6 @@
 import { Node, Operation, TrackedNode } from './Node'
 import { DiagonalMovement } from './DiagonalMovement'
+import { checkDiagonalMovement, Path } from './Util'
 
 type Matrix = number[][]
 
@@ -151,11 +152,11 @@ export class Grid {
     getNeighbors (node: Node, diagonalMovement: DiagonalMovement) {
         var x = node.x,
             y = node.y,
-            neighbors = [],
-            s0 = false, d0 = false,
-            s1 = false, d1 = false,
-            s2 = false, d2 = false,
-            s3 = false, d3 = false,
+            neighbors: Node[] = [],
+            s0 = false,
+            s1 = false,
+            s2 = false,
+            s3 = false,
             nodes = this.nodes
 
         // ↑
@@ -183,24 +184,7 @@ export class Grid {
             return neighbors
         }
 
-        if (diagonalMovement === DiagonalMovement.OnlyWhenNoObstacles) {
-            d0 = s3 && s0
-            d1 = s0 && s1
-            d2 = s1 && s2
-            d3 = s2 && s3
-        } else if (diagonalMovement === DiagonalMovement.IfAtMostOneObstacle) {
-            d0 = s3 || s0
-            d1 = s0 || s1
-            d2 = s1 || s2
-            d3 = s2 || s3
-        } else if (diagonalMovement === DiagonalMovement.Always) {
-            d0 = true
-            d1 = true
-            d2 = true
-            d3 = true
-        } else {
-            throw new Error('Incorrect value of diagonalMovement')
-        }
+        const [ d0, d1, d2, d3 ] = checkDiagonalMovement(diagonalMovement, [ s0, s1, s2, s3 ])
 
         // ↖
         if (d0 && this.isWalkableAt(x - 1, y - 1)) {

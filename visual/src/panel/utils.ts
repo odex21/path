@@ -1,4 +1,4 @@
-export type Pos = [ number, number ]
+import { Pos } from '/@/source'
 
 export const posToCoor = (nodeSize: number, pageX: number, pageY: number): [ number, number ] => {
   return [

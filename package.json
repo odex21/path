@@ -1,10 +1,14 @@
 {
-  "name": "visual-vue",
-  "version": "0.0.0",
+  "name": "@kkdy/pathfinding",
+  "version": "0.0.2",
   "scripts": {
     "dev": "vite",
     "build": "vite build"
   },
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.js",
   "dependencies": {
     "heap": "^0.2.6",
     "localforage": "^1.7.4",
@@ -21,7 +25,11 @@
     "@typescript-eslint/parser": "^3.4.0",
     "@vue/compiler-sfc": "^3.0.0-beta.15",
     "eslint": "^7.3.1",
-    "eslint-plugin-vue": "^7.0.0-alpha.6",
+    "eslint-plugin-vue": "^7.0.0-alpha.7",
+    "rollup-plugin-clear": "^2.0.7",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-terser": "^6.1.0",
+    "rollup-plugin-typescript2": "^0.27.1",
     "stylus": "^0.54.7",
     "typescript": "^3.9.5",
     "vite": "^1.0.0-beta.1",

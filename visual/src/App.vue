@@ -4,7 +4,7 @@
   <div id="container" ref="container" />
   <div class="status">
     <div
-      v-for="(coor, key) in mapConfig"
+      v-for="(coor, key) in mapConfigShowed"
       :key="key"
       class="status-coor"
       :class="key"
@@ -22,18 +22,30 @@
         <button @click="saveGrid">saveGrid</button>
         <button @click="useGrid">useGrid</button>
       </p>
+      <p>
+        stepInterval:
+        {{ stepInterval }}
+        <input
+          id="stepInterval"
+          v-model="stepInterval"
+          :max="300"
+          :min="1"
+          type="range"
+          name="stepInterval"
+        />
+      </p>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { onMounted, defineComponent, Ref, ref, reactive, toRefs } from 'vue'
-import { initSprite, InitMapConfig } from './panel/draw'
-import { Pos } from './panel/utils'
-import { find } from 'ramda'
-import { Grid, Node } from '/@/source'
-import { getStore, GRID } from './lib/store'
+import { onMounted, defineComponent, Ref, ref, reactive, toRefs, toRaw } from 'vue'
+import { initSprite, InitMapConfig, PartialInitMapConfig, WatchPos } from './panel/draw'
+import { find, omit } from 'ramda'
+import { Grid, Node, Pos } from '/@/source'
+import { getStore, GRID, START_POS, END_POS } from './lib/store'
 import { TrackedGrid } from '../../source/core/Grid'
+import { useRef, setRef } from './utils/share'
 
 export default defineComponent({
   name: 'App',
@@ -41,14 +53,19 @@ export default defineComponent({
   },
   setup () {
     const container: Ref<HTMLCanvasElement | null> = ref(null)
+    const stepInterval = ref(30)
     let grid: TrackedGrid
     let setGridFunc: (g: TrackedGrid) => void
     const localStore = getStore()
 
+    const startCoor = ref([ 11, 10 ]) as WatchPos
+    const endCoor = ref([ 21, 10 ]) as WatchPos
     const mapConfig = {
-      startCoor: ref([ 11, 10 ]) as Ref<Pos>,
-      endCoor: ref([ 17, 10 ]) as Ref<Pos>
-    }
+      startCoor,
+      endCoor,
+      stepInterval
+    } as PartialInitMapConfig
+    const mapConfigShowed = omit([ 'stepInterval' ], mapConfig)
 
     const findPath = ref(async () => [ [ 0 ] ])
     const resetMap = ref(() => { })
@@ -70,6 +87,8 @@ export default defineComponent({
     const saveGrid = () => {
       const arr = grid.nodes.map((rows) => rows.map(n => n.walkable ? 0 : 1))
       localStore.setItem(GRID, arr)
+      localStore.setItem(START_POS,  toRaw(useRef(startCoor)))
+      localStore.setItem(END_POS, toRaw(useRef(endCoor)))
     }
 
     const useGrid = async () => {
@@ -78,16 +97,21 @@ export default defineComponent({
         grid = new TrackedGrid(matrix)
         setGridFunc(grid)
       }
+      const start:Pos = await localStore.getItem(START_POS)
+      const end:Pos = await localStore.getItem(END_POS)
+      setRef(startCoor, start)
+      setRef(endCoor, end)
     }
 
 
     return {
       container,
-      mapConfig,
+      mapConfigShowed,
       startFind,
       resetMap,
       saveGrid,
-      useGrid
+      useGrid,
+      stepInterval,
     }
   }
 })

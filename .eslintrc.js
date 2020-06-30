@@ -16,7 +16,7 @@ module.exports = {
       "ignoreWhenEmpty": true,
       "ignores": [ "pre", "textarea", "button" ]
     } ],
-    "vue/valid-template-root": 1,
+    // "vue/valid-template-root": 0,
     "vue/html-self-closing": [ "error", {
       "html": {
         "void": "always",

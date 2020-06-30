@@ -1,3 +1,5 @@
+export type HeuristicFunc = (dx: number, dy: number) => number
+
 /**
  * @namespace PF.Heuristic
  * @description A collection of heuristic functions.

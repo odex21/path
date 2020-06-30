@@ -1,11 +1,18 @@
+import { Node } from './Node'
+import { Grid } from './Grid'
+import { DiagonalMovement } from './DiagonalMovement'
+
+export type Pos = [ number, number ]
+export type Path = Pos[]
+
 /**
  * Backtrace according to the parent records and return the path.
  * (including both start and end nodes)
  * @param {Node} node End node
  * @return {Array<Array<number>>} the path
  */
-export function backtrace (node) {
-    var path = [ [ node.x, node.y ] ]
+export function backtrace (node: Node) {
+    var path: Path = [ [ node.x, node.y ] ]
     while (node.parent) {
         node = node.parent
         path.push([ node.x, node.y ])
@@ -19,7 +26,7 @@ export function backtrace (node) {
  * @param {Node}
  * @param {Node}
  */
-export function biBacktrace (nodeA, nodeB) {
+export function biBacktrace (nodeA: Node, nodeB: Node) {
     var pathA = backtrace(nodeA),
         pathB = backtrace(nodeB)
     return pathA.concat(pathB.reverse())
@@ -30,7 +37,7 @@ export function biBacktrace (nodeA, nodeB) {
  * @param {Array<Array<number>>} path The path
  * @return {number} The length of the path
  */
-export function pathLength (path) {
+export function pathLength (path: Path) {
     var i, sum = 0, a, b, dx, dy
     for (i = 1; i < path.length; ++i) {
         a = path[ i - 1 ]
@@ -52,9 +59,9 @@ export function pathLength (path) {
  * @param {number} y1 End y coordinate
  * @return {Array<Array<number>>} The coordinates on the line
  */
-export function interpolate (x0, y0, x1, y1) {
+export function interpolate (x0: number, y0: number, x1: number, y1: number) {
     var abs = Math.abs,
-        line = [],
+        line: Path = [],
         sx, sy, dx, dy, err, e2
 
     dx = abs(x1 - x0)
@@ -92,8 +99,8 @@ export function interpolate (x0, y0, x1, y1) {
  * @param {Array<Array<number>>} path The path
  * @return {Array<Array<number>>} expanded path
  */
-export function expandPath (path) {
-    var expanded = [],
+export function expandPath (path: Path) {
+    var expanded: Path = [],
         len = path.length,
         coord0, coord1,
         interpolated,
@@ -125,31 +132,27 @@ export function expandPath (path) {
  * @param {PF.Grid} grid
  * @param {Array<Array<number>>} path The path
  */
-export function smoothenPath (grid, path) {
+export function smoothenPath (grid: Grid, path: Path) {
     var len = path.length,
         x0 = path[ 0 ][ 0 ],        // path start x
         y0 = path[ 0 ][ 1 ],        // path start y
         x1 = path[ len - 1 ][ 0 ],  // path end x
         y1 = path[ len - 1 ][ 1 ],  // path end y
-        sx, sy,                 // current start coordinate
-        ex, ey,                 // current end coordinate
-        newPath,
-        i, j, coord, line, testCoord, blocked
+        sx = x0, sy = y0               // current start coordinate
 
-    sx = x0
-    sy = y0
-    newPath = [ [ sx, sy ] ]
+    const newPath: Path = [ [ sx, sy ] ]
     let lastValidCoord
 
-    for (i = 2; i < len; ++i) {
-        coord = path[ i ]
-        ex = coord[ 0 ]
-        ey = coord[ 1 ]
-        line = interpolate(sx, sy, ex, ey)
+    for (let i = 2; i < len; ++i) {
+        const coord = path[ i ]
+        // current end coordinate
+        const ex = coord[ 0 ], ey = coord[ 1 ]
 
-        blocked = false
-        for (j = 1; j < line.length; ++j) {
-            testCoord = line[ j ]
+        const line = interpolate(sx, sy, ex, ey)
+
+        let blocked = false
+        for (let j = 1; j < line.length; ++j) {
+            const testCoord = line[ j ]
 
             if (!grid.isWalkableAt(testCoord[ 0 ], testCoord[ 1 ])) {
                 blocked = true
@@ -174,14 +177,14 @@ export function smoothenPath (grid, path) {
  * @param {Array<Array<number>>} path The path
  * @return {Array<Array<number>>} The compressed path
  */
-export function compressPath (path) {
+export function compressPath (path: Path) {
 
     // nothing to compress
     if (path.length < 3) {
         return path
     }
 
-    var compressed = [],
+    var compressed: Path = [],
         sx = path[ 0 ][ 0 ], // start x
         sy = path[ 0 ][ 1 ], // start y
         px = path[ 1 ][ 0 ], // second point x
@@ -234,3 +237,39 @@ export function compressPath (path) {
 
     return compressed
 }
+
+type PositionAllowArray = [ boolean, boolean, boolean, boolean ]
+
+export const checkDiagonalMovement = (diagonalMovement: DiagonalMovement, offsets: PositionAllowArray): PositionAllowArray => {
+    const [ s0, s1, s2, s3 ] = offsets
+    let d0 = false
+    let d1 = false
+    let d2 = false
+    let d3 = false
+
+    if (diagonalMovement === DiagonalMovement.Never) {
+        throw new Error('If set DiagonalMovement Never, it should not call this function')
+    }
+
+    if (diagonalMovement === DiagonalMovement.OnlyWhenNoObstacles) {
+        d0 = s3 && s0
+        d1 = s0 && s1
+        d2 = s1 && s2
+        d3 = s2 && s3
+    } else if (diagonalMovement === DiagonalMovement.IfAtMostOneObstacle) {
+        d0 = s3 || s0
+        d1 = s0 || s1
+        d2 = s1 || s2
+        d3 = s2 || s3
+    } else if (diagonalMovement === DiagonalMovement.Always) {
+        d0 = true
+        d1 = true
+        d2 = true
+        d3 = true
+    } else {
+        throw new Error('Incorrect value of diagonalMovement')
+    }
+
+    return [ d0, d1, d2, d3 ]
+}
+
