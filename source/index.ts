@@ -24,3 +24,4 @@ export * from './core/Util'
 export { Node } from './core/Node'
 
 export { AStarFinder } from './finders/AStarFinder'
+export { JumpPointFinder } from './finders/JumpPointFinder'

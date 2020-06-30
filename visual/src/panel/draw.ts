@@ -1,7 +1,7 @@
 import { Ref, ref } from 'vue'
 import { Scene, Node, Polyline } from 'spritejs'
 import { initBaseSqure, setSqureWalkable } from './Squre'
-import { DiagonalMovement, Heuristic, AStarFinder, smoothenPath, Pos, Path, compressPath } from '/@/source/'
+import { DiagonalMovement, Heuristic, AStarFinder, smoothenPath, Pos, Path, compressPath, JumpPointFinder } from '../../../dist'//'/@/source/'
 import { merge, curry, flatten, mergeWith } from 'ramda'
 import { isSamePos, getRectArr, coorToPos, posToCoor, sleep } from './utils'
 import { squreStyle } from './style'
@@ -56,10 +56,11 @@ export const initSprite = (container: HTMLCanvasElement, initConfig: PartialInit
   /**
    * finder
    */
-  const finder = new AStarFinder({
+  const finder = JumpPointFinder({
     diagonalMovement: DiagonalMovement.OnlyWhenNoObstacles,
     heuristic: Heuristic.manhattan,
-    weight: 1,
+    // weight: 1,
+    trackJumpRecursion: false,
     // dontCrossCorners: true
   })
 
@@ -156,6 +157,9 @@ export const initSprite = (container: HTMLCanvasElement, initConfig: PartialInit
     if (resultPath) resultPath.remove()
   }
 
+  /**
+   * function
+   */
   const setGrid = (newGrid: TrackedGrid) => {
     newGrid.nodes.forEach(rows => {
       rows.forEach(node => {
@@ -165,6 +169,8 @@ export const initSprite = (container: HTMLCanvasElement, initConfig: PartialInit
         }
       })
     })
+    startSqure.attr({ pos: coorToPos(nodeSize, ...startCoor.value!) })
+    endSqure.attr({ pos: coorToPos(nodeSize, ...endCoor.value!) })
     grid = newGrid
   }
 

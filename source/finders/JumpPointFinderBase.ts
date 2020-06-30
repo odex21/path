@@ -1,16 +1,12 @@
 /**
  * @author imor / https://github.com/imor
  */
-// var Heap       = require('heap');
-// var Util       = require('../core/Util');
-// var Heuristic  = require('../core/Heuristic');
-// var DiagonalMovement = require('../core/DiagonalMovement');
 
 import Heap from 'heap'
-import { } from '../core/Util'
+import { expandPath, backtrace, Path, Pos } from '../core/Util'
 import { Heuristic, HeuristicFunc } from '../core/Heuristic'
 import { Grid } from '../core/Grid'
-
+import { Node } from '../core/Node'
 
 export interface JumpPointFinderBaseOptions {
     heuristic: HeuristicFunc
@@ -18,7 +14,7 @@ export interface JumpPointFinderBaseOptions {
 }
 
 
-export class JumpPointFinderBase {
+export abstract class JumpPointFinderBase {
 
 
     heuristic: HeuristicFunc
@@ -27,6 +23,15 @@ export class JumpPointFinderBase {
      * ???
      */
     trackJumpRecursion: boolean
+
+    openList?: Heap<Node>
+
+    startNode?: Node
+
+    endNode?: Node
+
+    grid?: Grid
+
 
     /**
      * Base class for the Jump Point Search algorithm
@@ -45,12 +50,14 @@ export class JumpPointFinderBase {
      * @return {Array<Array<number>>} The path, including both start and
      *     end positions.
      */
-    findPath (startX: number, startY: number, endX: number, endY: number, grid: Grid) {
-        var openList = this.openList = new Heap(function (nodeA, nodeB) {
+    findPath (startX: number, startY: number, endX: number, endY: number, grid: Grid): Path {
+        this.openList = new Heap((nodeA: Node, nodeB: Node) => {
             return nodeA.f - nodeB.f
-        }),
-            startNode = this.startNode = grid.getNodeAt(startX, startY),
-            endNode = this.endNode = grid.getNodeAt(endX, endY), node: unknown
+        })
+        const openList = this.openList
+
+        const startNode = this.startNode = grid.getNodeAt(startX, startY),
+            endNode = this.endNode = grid.getNodeAt(endX, endY)
 
         this.grid = grid
 
@@ -66,11 +73,11 @@ export class JumpPointFinderBase {
         // while the open list is not empty
         while (!openList.empty()) {
             // pop the position of node which has the minimum `f` value.
-            node = openList.pop()
+            const node = openList.pop()
             node.closed = true
 
             if (node === endNode) {
-                return Util.expandPath(Util.backtrace(endNode))
+                return expandPath(backtrace(endNode))
             }
 
             this._identifySuccessors(node)
@@ -86,35 +93,31 @@ export class JumpPointFinderBase {
      * list.
      * @protected
      */
-    JumpPointFinderBase.prototype._identifySuccessors = function (node: { x: any; y: any; g: any }) {
-        var grid = this.grid,
+    _identifySuccessors (node: Node) {
+        const grid = this.grid!,
             heuristic = this.heuristic,
-            openList = this.openList,
-            endX = this.endNode.x,
-            endY = this.endNode.y,
-            neighbors: string | any[], neighbor: any[],
-            jumpPoint: any[], i: number, l: number,
-            x = node.x, y = node.y,
-            jx: number, jy: number, dx: any, dy: any, d: number, ng: number, jumpNode: { closed: any; opened: boolean; g: number; h: any; f: any; parent: any },
+            openList = this.openList!
+
+        const { x: endX, y: endY } = this.endNode!
+        const x = node.x, y = node.y,
             abs = Math.abs, max = Math.max
 
-        neighbors = this._findNeighbors(node)
-        for (i = 0, l = neighbors.length; i < l; ++i) {
-            neighbor = neighbors[ i ]
-            jumpPoint = this._jump(neighbor[ 0 ], neighbor[ 1 ], x, y)
+        const neighbors = this._findNeighbors(node)
+        for (let i = 0, l = neighbors.length; i < l; ++i) {
+            const neighbor = neighbors[ i ]
+            const jumpPoint = this._jump(neighbor[ 0 ], neighbor[ 1 ], x, y)
             if (jumpPoint) {
 
-                jx = jumpPoint[ 0 ]
-                jy = jumpPoint[ 1 ]
-                jumpNode = grid.getNodeAt(jx, jy)
+                const [ jx, jy ] = jumpPoint
+                const jumpNode = grid.getNodeAt(jx, jy)
 
                 if (jumpNode.closed) {
                     continue
                 }
 
                 // include distance, as parent may not be immediately adjacent:
-                d = Heuristic.octile(abs(jx - x), abs(jy - y))
-                ng = node.g + d // next `g` value
+                const d = Heuristic.octile(abs(jx - x), abs(jy - y))
+                const ng = node.g + d // next `g` value
 
                 if (!jumpNode.opened || ng < jumpNode.g) {
                     jumpNode.g = ng
@@ -132,4 +135,7 @@ export class JumpPointFinderBase {
             }
         }
     }
+
+    protected abstract _findNeighbors (node: Node): Pos[]
+    protected abstract _jump (x1: number, y1: number, x2: number, y2: number): Pos | null
 }

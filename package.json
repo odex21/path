@@ -1,9 +1,10 @@
 {
   "name": "@kkdy/pathfinding",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "scripts": {
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "prepublishOnly": "rollup -c"
   },
   "files": [
     "dist"

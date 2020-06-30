@@ -87,20 +87,20 @@ export default defineComponent({
     const saveGrid = () => {
       const arr = grid.nodes.map((rows) => rows.map(n => n.walkable ? 0 : 1))
       localStore.setItem(GRID, arr)
-      localStore.setItem(START_POS,  toRaw(useRef(startCoor)))
+      localStore.setItem(START_POS, toRaw(useRef(startCoor)))
       localStore.setItem(END_POS, toRaw(useRef(endCoor)))
     }
 
     const useGrid = async () => {
+      const start: Pos = await localStore.getItem(START_POS)
+      const end: Pos = await localStore.getItem(END_POS)
+      setRef(startCoor, start)
+      setRef(endCoor, end)
       const matrix: number[][] = await localStore.getItem(GRID)
       if (matrix && setGridFunc) {
         grid = new TrackedGrid(matrix)
         setGridFunc(grid)
       }
-      const start:Pos = await localStore.getItem(START_POS)
-      const end:Pos = await localStore.getItem(END_POS)
-      setRef(startCoor, start)
-      setRef(endCoor, end)
     }
 
 
