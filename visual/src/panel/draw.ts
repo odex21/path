@@ -1,37 +1,39 @@
-import { ToRefs, isRef, toRefs, toRaw, reactive } from 'vue'
-import { trackNode, Controller } from './trackNode'
+import { Ref, ref } from 'vue'
 import { Scene, Node, Polyline } from 'spritejs'
 import { initBaseSqure, setSqureWalkable } from './Squre'
-import { Grid, AStarFinder, DiagonalMovement, Heuristic, } from '/@/source/'
-import { merge, curry, flatten } from 'ramda'
+import { DiagonalMovement, Heuristic, AStarFinder, } from '/@/source/'
+import { merge, curry, flatten, mergeWith } from 'ramda'
 import { isSamePos, Pos, getRectArr, coorToPos, posToCoor, sleep } from './utils'
 import { squreStyle } from './style'
+import { TrackedGrid } from '/@/source/core/Grid'
+import { Operation } from '/@/source/core/Node'
 
 
 type CurrentActionMode = 'idle' | 'draggingStart' | 'draggingEnd' | 'drawingWall' | 'erasingWall'
+type WatchPos = Ref<Pos>
+type WatchNum = Ref<number>
 
 export interface InitMapConfig {
-  nodeSize?: number
-  startCoor?: Pos
-  endCoor?: Pos
-  stepInterval?: number
-  // grid?:
+  nodeSize: number
+  startCoor: WatchPos
+  endCoor: WatchPos
+  stepInterval: WatchNum
+}
+
+type PartialInitMapConfig = Partial<InitMapConfig>
+
+const defaultInitMapConfig = {
+  nodeSize: 30,
+  startCoor: ref([ 0, 0 ]) as WatchPos,
+  endCoor: ref([ 1, 1 ]) as WatchPos,
+  stepInterval: ref(17) as WatchNum
 }
 
 
-const defaultInitMapConfig: InitMapConfig = reactive({
-  nodeSize: 30,
-  startCoor: [ 0, 0 ],
-  endCoor: [ 1, 1 ],
-  stepInterval: 17
-})
-
-export const initSprite = (container: HTMLCanvasElement, initConfig: ToRefs<InitMapConfig> = {}) => {
-
+export const initSprite = (container: HTMLCanvasElement, initConfig: PartialInitMapConfig = {}) => {
   // config  
-  const config = merge(toRefs(defaultInitMapConfig), initConfig)
-  const { nodeSize: _nodeSize, stepInterval } = config
-  const nodeSize = _nodeSize.value
+  const config = merge(defaultInitMapConfig, initConfig)
+  const { nodeSize, stepInterval } = config
   let { endCoor, startCoor } = config
   let currtMode: CurrentActionMode = 'idle'
 
@@ -39,12 +41,7 @@ export const initSprite = (container: HTMLCanvasElement, initConfig: ToRefs<Init
   const toCoor = curry(posToCoor)(nodeSize)
   const toPos = curry(coorToPos)(nodeSize)
 
-  const Controller = {
-    operations: []
-  } as Controller
 
-  // hook finder by track node
-  trackNode(Controller)
 
   //? init pathfinding
   let resultPath: Polyline
@@ -52,14 +49,16 @@ export const initSprite = (container: HTMLCanvasElement, initConfig: ToRefs<Init
   const mapArr = getRectArr(nodeSize, Math.floor(container.clientHeight / nodeSize), Math.floor(container.clientWidth / nodeSize,))
   const gridArr = mapArr.map(rows => rows.map(e => 0))
   //! ts 的参数判断有问题
-  let grid = new Grid(gridArr)
+  let grid = new TrackedGrid(gridArr)
+
+  console.log('grid', grid)
 
   const finder = new AStarFinder({
-    allowDiagonal: true,
+    // allowDiagonal: true,
     diagonalMovement: DiagonalMovement.OnlyWhenNoObstacles,
     heuristic: Heuristic.manhattan,
     weight: 0.5,
-    dontCrossCorners: true
+    // dontCrossCorners: true
   })
 
 
@@ -83,7 +82,7 @@ export const initSprite = (container: HTMLCanvasElement, initConfig: ToRefs<Init
 
   // start and end Point
   const startSqure = initBaseSqure({
-    pos: coorToPos(nodeSize, ...startCoor.value),
+    pos: coorToPos(nodeSize, ...startCoor.value!),
     size: [ nodeSize - 2, nodeSize - 2 ],
     ...squreStyle.start
   })
@@ -104,7 +103,7 @@ export const initSprite = (container: HTMLCanvasElement, initConfig: ToRefs<Init
     }
     const start = startCoor.value
     const end = endCoor.value
-    const path = finder.findPath(start[ 0 ], start[ 1 ], end[ 0 ], end[ 1 ], grid.clone())
+    const path = finder.findPath(start[ 0 ], start[ 1 ], end[ 0 ], end[ 1 ], grid.clone()) as [ number, number ][]
 
     resultPath = new Polyline({
       pos: [ 0, 0 ],
@@ -115,8 +114,8 @@ export const initSprite = (container: HTMLCanvasElement, initConfig: ToRefs<Init
 
 
     layer.append(resultPath)
-
-    for (const op of Controller.operations) {
+    // console.log(grid.operations)
+    for (const op of grid.operations) {
       if (op.attr in squreStyle) {
         const target: Node = layer.childNodes.find((e: Node) => isSamePos(e.attributes.pos, toPos(op.x, op.y)))
         if (target) {
@@ -134,15 +133,15 @@ export const initSprite = (container: HTMLCanvasElement, initConfig: ToRefs<Init
     layer.childNodes.forEach(node => {
       changeSqureState(node, true)
     })
-    Controller.operations.forEach(op => {
+    grid.operations.forEach(op => {
       const target: Node = layer.childNodes.find((e: Node) => isSamePos(e.attributes.pos, toPos(op.x, op.y)))
       if (target) setSqureWalkable(target, true)
     })
-    Controller.operations = []
+    grid.operations = []
     if (resultPath) resultPath.remove()
   }
 
-  const setGrid = (newGrid: Grid) => {
+  const setGrid = (newGrid: TrackedGrid) => {
     newGrid.nodes.forEach(rows => {
       rows.forEach(node => {
         if (!node.walkable) {

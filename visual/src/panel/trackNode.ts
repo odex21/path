@@ -1,10 +1,11 @@
 import { Node } from '/@/source'
+import { squreStyle } from './style'
 
 export interface Controller {
   operations: {
     x: number
     y: number
-    attr: string
+    attr: keyof typeof squreStyle
     value: boolean
   }[]
 }

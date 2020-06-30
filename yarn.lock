@@ -202,6 +202,11 @@
     "@types/qs" "*"
     "@types/serve-static" "*"
 
+"@types/heap@^0.2.28":
+  version "0.2.28"
+  resolved "https://registry.npmjs.org/@types/heap/-/heap-0.2.28.tgz#c4247fae0e438c76ae05194c4b87cd5c4e859a7d"
+  integrity sha1-xCR/rg5DjHauBRlMS4fNXE6Fmn0=
+
 "@types/http-assert@*":
   version "1.5.1"
   resolved "https://registry.npmjs.org/@types/http-assert/-/http-assert-1.5.1.tgz#d775e93630c2469c2f980fc27e3143240335db3b"
@@ -258,6 +263,11 @@
   version "14.0.14"
   resolved "https://registry.npmjs.org/@types/node/-/node-14.0.14.tgz#24a0b5959f16ac141aeb0c5b3cd7a15b7c64cbce"
   integrity sha512-syUgf67ZQpaJj01/tRTknkMNoBBLWJOBODF0Zm4NrXmiSuxjymFrxnTu1QVYRubhVkRcZLYZG8STTwJRdVm/WQ==
+
+"@types/pathfinding@^0.0.4":
+  version "0.0.4"
+  resolved "https://registry.npmjs.org/@types/pathfinding/-/pathfinding-0.0.4.tgz#e878b8ef5c014743e95495afc4291df2b1c94726"
+  integrity sha512-W/gYSgsGaA6gofQNktySOL3ekUqgcrGmmS/XUdCMO+RgOkaqQVnk7yri1vbfU9Dun3jgQxsOphdbOlbNZlr4Nw==
 
 "@types/qs@*":
   version "6.9.3"

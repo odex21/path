@@ -10,7 +10,7 @@ export const Heuristic = {
      * @param {number} dy - Difference in y.
      * @return {number} dx + dy
      */
-    manhattan: function (dx, dy) {
+    manhattan: function (dx: number, dy: number) {
         return dx + dy
     },
 
@@ -20,7 +20,7 @@ export const Heuristic = {
      * @param {number} dy - Difference in y.
      * @return {number} sqrt(dx * dx + dy * dy)
      */
-    euclidean: function (dx, dy) {
+    euclidean: function (dx: number, dy: number) {
         return Math.sqrt(dx * dx + dy * dy)
     },
 
@@ -30,7 +30,7 @@ export const Heuristic = {
      * @param {number} dy - Difference in y.
      * @return {number} sqrt(dx * dx + dy * dy) for grids
      */
-    octile: function (dx, dy) {
+    octile: function (dx: number, dy: number) {
         var F = Math.SQRT2 - 1
         return (dx < dy) ? F * dx + dy : F * dy + dx
     },
@@ -41,7 +41,7 @@ export const Heuristic = {
      * @param {number} dy - Difference in y.
      * @return {number} max(dx, dy)
      */
-    chebyshev: function (dx, dy) {
+    chebyshev: function (dx: number, dy: number) {
         return Math.max(dx, dy)
     }
 

@@ -33,26 +33,28 @@ import { Pos } from './panel/utils'
 import { find } from 'ramda'
 import { Grid, Node } from '/@/source'
 import { getStore, GRID } from './lib/store'
+import { TrackedGrid } from '../../source/core/Grid'
 
 export default defineComponent({
   name: 'App',
   components: {
   },
   setup () {
-    const container: Ref<HTMLCanvasElement> = ref(null)
-    let grid: Grid
-    let setGridFunc: (g: Grid) => void
+    const container: Ref<HTMLCanvasElement | null> = ref(null)
+    let grid: TrackedGrid
+    let setGridFunc: (g: TrackedGrid) => void
     const localStore = getStore()
 
-    const mapConfig = reactive({
-      startCoor: [ 11, 10 ],
-      endCoor: [ 17, 10 ]
-    }) as InitMapConfig
+    const mapConfig = {
+      startCoor: ref([ 11, 10 ]) as Ref<Pos>,
+      endCoor: ref([ 17, 10 ]) as Ref<Pos>
+    }
 
     const findPath = ref(async () => [ [ 0 ] ])
     const resetMap = ref(() => { })
     onMounted(() => {
-      const { scene, findPath: v_findPath, reset, grid: _g, setGrid } = initSprite(container.value, toRefs(mapConfig))
+      if (!container.value) throw new Error('can not find canvas element')
+      const { scene, findPath: v_findPath, reset, grid: _g, setGrid } = initSprite(container.value, mapConfig)
       findPath.value = v_findPath
       resetMap.value = reset
       grid = _g
@@ -73,7 +75,7 @@ export default defineComponent({
     const useGrid = async () => {
       const matrix: number[][] = await localStore.getItem(GRID)
       if (matrix && setGridFunc) {
-        grid = new Grid(matrix)
+        grid = new TrackedGrid(matrix)
         setGridFunc(grid)
       }
     }

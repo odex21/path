@@ -1,6 +1,7 @@
-import { Node } from './Node'
+import { Node, Operation, TrackedNode } from './Node'
 import { DiagonalMovement } from './DiagonalMovement'
 
+type Matrix = number[][]
 
 export class Grid {
     width: number
@@ -15,7 +16,7 @@ export class Grid {
      * @param {Array<Array<(number|boolean)>>} [matrix] - A 0-1 matrix
      *     representing the walkable status of the nodes(0 or false for walkable).
      *     If the matrix is not supplied, all the nodes will be walkable.  */
-    constructor (width_or_matrix, height?, matrix?) {
+    constructor (width_or_matrix: number[][] | number, height?: number, matrix?: Matrix) {
         var width
 
         if (!Array.isArray(width_or_matrix)) {
@@ -35,12 +36,12 @@ export class Grid {
          * The number of rows of the grid.
          * @type number
          */
-        this.height = height
+        this.height = height!
 
         /**
          * A 2D array of nodes.
          */
-        this.nodes = this._buildNodes(width, height, matrix)
+        this.nodes = this._buildNodes(width, height!, matrix)
     }
 
     /**
@@ -52,7 +53,7 @@ export class Grid {
      *     the walkable status of the nodes.
      * @see Grid
      */
-    _buildNodes (width, height, matrix) {
+    _buildNodes (width: number, height: number, matrix?: Matrix) {
         var i, j,
             nodes = new Array(height)
 
@@ -86,7 +87,7 @@ export class Grid {
     }
 
 
-    getNodeAt (x, y) {
+    getNodeAt (x: number, y: number) {
         return this.nodes[ y ][ x ]
     }
 
@@ -98,7 +99,7 @@ export class Grid {
      * @param {number} y - The y coordinate of the node.
      * @return {boolean} - The walkability of the node.
      */
-    isWalkableAt (x, y) {
+    isWalkableAt (x: number, y: number) {
         return this.isInside(x, y) && this.nodes[ y ][ x ].walkable
     }
 
@@ -112,7 +113,7 @@ export class Grid {
      * @param {number} y
      * @return {boolean}
      */
-    isInside (x, y) {
+    isInside (x: number, y: number) {
         return (x >= 0 && x < this.width) && (y >= 0 && y < this.height)
     }
 
@@ -124,7 +125,7 @@ export class Grid {
      * @param {number} y - The y coordinate of the node.
      * @param {boolean} walkable - Whether the position is walkable.
      */
-    setWalkableAt (x, y, walkable) {
+    setWalkableAt (x: number, y: number, walkable: boolean) {
         this.nodes[ y ][ x ].walkable = walkable
     }
 
@@ -147,7 +148,7 @@ export class Grid {
      * @param {Node} node
      * @param {DiagonalMovement} diagonalMovement
      */
-    getNeighbors (node, diagonalMovement) {
+    getNeighbors (node: Node, diagonalMovement: DiagonalMovement) {
         var x = node.x,
             y = node.y,
             neighbors = [],
@@ -240,6 +241,70 @@ export class Grid {
             newNodes[ i ] = new Array(width)
             for (j = 0; j < width; ++j) {
                 newNodes[ i ][ j ] = new Node(j, i, thisNodes[ i ][ j ].walkable)
+            }
+        }
+
+        newGrid.nodes = newNodes
+
+        return newGrid
+    }
+
+}
+
+
+export class TrackedGrid extends Grid {
+    operations: Operation[] = []
+
+    _buildNodes (width: number, height: number, matrix: Matrix) {
+        var i, j,
+            nodes = new Array(height)
+
+        if (this.operations === undefined) this.operations = []
+
+        for (i = 0; i < height; ++i) {
+            nodes[ i ] = new Array(width)
+            for (j = 0; j < width; ++j) {
+                nodes[ i ][ j ] = TrackedNode.of(j, i, true, this.operations)
+            }
+        }
+
+
+        if (matrix === undefined) {
+            return nodes
+        }
+
+        if (matrix.length !== height || matrix[ 0 ].length !== width) {
+            console.log(matrix, height, width)
+            throw new Error('Matrix size does not fit')
+        }
+
+        for (i = 0; i < height; ++i) {
+            for (j = 0; j < width; ++j) {
+                if (matrix[ i ][ j ]) {
+                    // 0, false, null will be walkable
+                    // while others will be un-walkable
+                    nodes[ i ][ j ].walkable = false
+                }
+            }
+        }
+
+        return nodes
+    }
+
+    clone () {
+        var i, j,
+
+            width = this.width,
+            height = this.height,
+            thisNodes = this.nodes,
+
+            newGrid = new TrackedGrid(width, height),
+            newNodes = new Array(height)
+
+        for (i = 0; i < height; ++i) {
+            newNodes[ i ] = new Array(width)
+            for (j = 0; j < width; ++j) {
+                newNodes[ i ][ j ] = TrackedNode.of(j, i, thisNodes[ i ][ j ].walkable, this.operations)
             }
         }
 

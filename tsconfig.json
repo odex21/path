@@ -1,12 +1,15 @@
 {
   "compilerOptions": {
-    // "module": "esnext",
-    // "strict": true,
-    // "target": "ES2018",
-    // "jsx": "preserve",
+    "target": "es2018",
+    "module": "esnext",
+    "strict": true,
+    "jsx": "preserve",
     "importHelpers": true,
-    // "allowJs": true,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
     "baseUrl": ".",
     "paths": {
       "/@/*": [
