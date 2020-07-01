@@ -1,7 +1,7 @@
 import { Ref, ref } from 'vue'
 import { Scene, Node, Polyline } from 'spritejs'
 import { initBaseSqure, setSqureWalkable } from './Squre'
-import { DiagonalMovement, Heuristic, AStarFinder, smoothenPath, Pos, Path, compressPath, JumpPointFinder } from '../../../dist'//'/@/source/'
+import { DiagonalMovement, Heuristic, AStarFinder, smoothenPath, Pos, Path, compressPath, JumpPointFinder } from '/@/source/'
 import { merge, curry, flatten, mergeWith } from 'ramda'
 import { isSamePos, getRectArr, coorToPos, posToCoor, sleep } from './utils'
 import { squreStyle } from './style'
