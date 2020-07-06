@@ -43,3 +43,24 @@ export const sleep = (time: number) => {
     setTimeout(() => resolve(), time)
   })
 }
+
+
+export const getCoorTransform = (width: number, height: number) => {
+  const center = [ width, height ].map(el => Math.floor(el / 2)) as Pos
+
+  const convertCoorToPos3d = (pos: Pos) => {
+    return pos.map((el, index) => el - center[ index ]) as Pos
+  }
+
+  const covertPos3dToCoor = (pos: Pos) => {
+    return pos.map((el, index) => el + center[ index ]) as Pos
+  }
+
+  return {
+    convertCoorToPos3d,
+    covertPos3dToCoor
+  }
+}
+
+
+export const mmap = (arr: any[][], func: Function) => arr.map(a => a.map(e => func(e)))

@@ -1,11 +1,12 @@
 import { Ref, ref } from 'vue'
 import { Scene, Node, Polyline } from 'spritejs'
 import { initBaseSqure, setSqureWalkable } from './Squre'
-import { DiagonalMovement, Heuristic, AStarFinder, smoothenPath, Pos, Path, compressPath, JumpPointFinder } from '/@/source/'
+import { DiagonalMovement, Heuristic, AStarFinder, Node as GridNode, smoothenPath, Pos, Path, compressPath, JumpPointFinder, Grid } from '/@/source/'
 import { merge, curry, flatten, mergeWith } from 'ramda'
-import { isSamePos, getRectArr, coorToPos, posToCoor, sleep } from './utils'
+import { isSamePos, getRectArr, coorToPos, posToCoor, sleep, mmap } from '../utils'
 import { squreStyle } from './style'
 import { TrackedGrid } from '/@/source/core/Grid'
+import { MapCube } from '../convert'
 
 
 type CurrentActionMode = 'idle' | 'draggingStart' | 'draggingEnd' | 'drawingWall' | 'erasingWall'
@@ -29,7 +30,7 @@ const defaultInitMapConfig = {
 }
 
 
-export const initSprite = (container: HTMLCanvasElement, initConfig: PartialInitMapConfig = {}) => {
+export const initSprite = (container: Element, initConfig: PartialInitMapConfig = {}) => {
   // config  
   const config = merge(defaultInitMapConfig, initConfig)
   const { nodeSize, stepInterval } = config
@@ -46,11 +47,12 @@ export const initSprite = (container: HTMLCanvasElement, initConfig: PartialInit
   let resultPath: Polyline
   let running = false
 
-  const mapArr = getRectArr(nodeSize, Math.floor(container.clientHeight / nodeSize), Math.floor(container.clientWidth / nodeSize,))
+  let grid: TrackedGrid
+  let mapArr: Pos[][]
+  mapArr = getRectArr(nodeSize, Math.floor(container.clientHeight / nodeSize), Math.floor(container.clientWidth / nodeSize,))
   const gridArr = mapArr.map(rows => rows.map(e => 0))
   //! ts 的参数判断有问题
-  let grid = new TrackedGrid(gridArr)
-
+  grid = new TrackedGrid(gridArr)
   console.log('grid', grid)
 
   /**
@@ -82,6 +84,7 @@ export const initSprite = (container: HTMLCanvasElement, initConfig: PartialInit
       }))
     })
   })
+
 
   // start and end Point
   const startSqure = initBaseSqure({
