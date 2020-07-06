@@ -5,6 +5,7 @@ module.exports = {
   alias: {
     '/@PathFinding/': p,
     '/@/': __dirname,
+    '/src/': path.resolve(__dirname, '/visual/src'),
     'spritejs': 'spritejs/dist/spritejs.esm.js'
   }
 }

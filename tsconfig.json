@@ -11,9 +11,13 @@
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
     "baseUrl": ".",
+    "resolveJsonModule": true,
     "paths": {
       "/@/*": [
         "./*"
+      ],
+      "/src/*": [
+        "./visual/src/*"
       ],
       "spritejs": [
         "spritejs/dist/spritejs.esm.js"
@@ -32,6 +36,7 @@
     "source",
   ],
   "exclude": [
-    "visual/dist/*"
+    "visual/dist/*",
+    "visual/src/panel/sprite3d/sprite-ext-3d/*"
   ]
 }

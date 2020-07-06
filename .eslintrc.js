@@ -19,8 +19,8 @@ module.exports = {
     // "vue/valid-template-root": 0,
     "vue/html-self-closing": [ "error", {
       "html": {
-        "void": "always",
-        "normal": "always",
+        "void": "any",
+        "normal": "any",
         "component": "always"
       },
       "svg": "always",
