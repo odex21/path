@@ -25,3 +25,9 @@ export { Node } from './core/Node'
 
 export { AStarFinder } from './finders/AStarFinder'
 export { JumpPointFinder } from './finders/JumpPointFinder'
+
+import { Grid } from './core/Grid'
+import { Path } from './core/Util'
+export interface Finder {
+  findPath(startX: number, startY: number, endX: number, endY: number, matrix: Grid): Path;
+}
