@@ -13,6 +13,7 @@
   "dependencies": {
     "heap": "^0.2.6",
     "localforage": "^1.7.4",
+    "mitt": "^1.2.0",
     "moment": "^2.27.0",
     "ramda": "^0.27.0",
     "sprite-extend-3d": "^0.14.3",
@@ -40,5 +41,6 @@
     "typescript": "^3.9.5",
     "vite": "^1.0.0-beta.1",
     "vue-eslint-parser": "^7.1.0"
-  }
+  },
+  "license": "MIT"
 }

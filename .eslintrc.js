@@ -11,10 +11,10 @@ module.exports = {
   rules: {
     // override/ add rules settings here, such as:
     // 'vue/no-unused-vars': 'error'
-    "vue/singleline-html-element-content-newline": [ "error", {
+    "vue/singleline-html-element-content-newline": [ "warn", {
       "ignoreWhenNoAttributes": true,
       "ignoreWhenEmpty": true,
-      "ignores": [ "pre", "textarea", "button" ]
+      "ignores": [ "pre", "textarea", "button", "slot" ]
     } ],
     // "vue/valid-template-root": 0,
     "vue/html-self-closing": [ "error", {
