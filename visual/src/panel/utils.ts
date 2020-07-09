@@ -1,17 +1,17 @@
 import { Pos } from '/@/source'
 
-export const posToCoor = (nodeSize: number, pageX: number, pageY: number): [ number, number ] => {
+export const posToCoor = (nodeSize: number, pageX: number, pageY: number): Pos => {
   return [
     Math.floor(pageX / nodeSize),
     Math.floor(pageY / nodeSize)
   ]
 }
 
-export const coorToPos = (nodeSize: number, gridX: number, gridY: number): [ number, number ] => {
+export const coorToPos = (nodeSize: number, gridX: number, gridY: number): Pos => {
   return [
     gridX * nodeSize + nodeSize / 2,
     gridY * nodeSize + nodeSize / 2
-  ]
+  ] 
 }
 
 export const isSamePos = (p1: Pos, p2: Pos) => {
@@ -63,4 +63,5 @@ export const getCoorTransform = (width: number, height: number) => {
 }
 
 
-export const mmap = (arr: any[][], func: Function) => arr.map(a => a.map(e => func(e)))
+export const mmap = <T, K>(arr: T[][], func: (o:T, i:number, j:number) => K) => arr.map((a, i) => a.map((e, j) => func(e, i, j)))
+export const fforeach = <T, K>(arr: T[][], func: (o:T, i:number, j:number) => K) => arr.forEach((a, i) => a.forEach((e, j) => func(e, i, j)))
